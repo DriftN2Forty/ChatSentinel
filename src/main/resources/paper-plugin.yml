@@ -6,6 +6,12 @@ api-version: "1.21"
 author: DriftN2Forty
 website: https://github.com/DriftN2Forty/ChatSentinel
 
+commands:
+  chatsentinel:
+    description: ChatSentinel admin commands
+    usage: "/chatsentinel <reload|status|history|purge>"
+    permission: chatsentinel.staff
+
 dependencies:
   server:
     PlaceholderAPI:
