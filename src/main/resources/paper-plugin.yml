@@ -1,0 +1,24 @@
+name: ChatSentinel
+version: ${version}
+main: io.github.driftn2forty.chatsentinel.ChatSentinel
+description: Multi-layered chat moderation — trie filter, moderation API, and LLM review
+api-version: "1.21"
+author: DriftN2Forty
+website: https://github.com/DriftN2Forty/ChatSentinel
+
+dependencies:
+  server:
+    PlaceholderAPI:
+      required: false
+      load: BEFORE
+
+permissions:
+  chatsentinel.bypass:
+    description: Skip all moderation (chat, whispers, signs, books, anvils)
+    default: false
+  chatsentinel.staff:
+    description: Receive escalation alerts
+    default: op
+  chatsentinel.admin:
+    description: Full admin access
+    default: op

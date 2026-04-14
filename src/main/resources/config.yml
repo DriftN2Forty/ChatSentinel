@@ -1,0 +1,141 @@
+# ── Layer 1: Moderation API ──────────────────────────────────────────
+# Used for fast, cheap initial screening. Defaults to OpenAI Moderation API.
+# The only hard requirement is an endpoint that accepts the OpenAI moderation
+# request format and returns category scores.
+layer1:
+  enabled: false                         # Disabled by default — requires API key to use
+  base-url: "https://api.openai.com"     # Base URL (no trailing slash, no path)
+  api-key: "${OPENAI_API_KEY}"           # Supports env var substitution with ${VAR}
+  model: "omni-moderation-latest"
+
+# ── Layer 2: LLM Deep Review ─────────────────────────────────────────
+# Used for context-aware analysis of flagged messages. Defaults to OpenAI,
+# but any provider offering an OpenAI-compatible /v1/chat/completions
+# endpoint works: Ollama, LM Studio, vLLM, Azure OpenAI, Together, Groq, etc.
+layer2:
+  enabled: false                         # Disabled by default — requires API key to use
+  base-url: "https://api.openai.com"     # Change for other providers (see examples below)
+  api-key: "${OPENAI_API_KEY}"           # Can be a different key/provider than Layer 1
+  model: "gpt-4o"
+  system-prompt: |
+    You are a Minecraft chat moderator. You will receive a flagged message
+    along with recent chat context from multiple players (with identifiers
+    and current moderation scores). Evaluate the flagged message in context.
+    Respond with a JSON verdict: ALLOW, WARN, MUTE, or ESCALATE.
+  max-tokens: 150
+  temperature: 0.0
+
+# ── Example: Layer 2 with Ollama (local, free) ───────────────────────
+# layer2:
+#   base-url: "http://localhost:11434"
+#   api-key: ""                           # Ollama doesn't require a key
+#   model: "llama3"
+
+# ── Example: Layer 2 with Azure OpenAI ───────────────────────────────
+# layer2:
+#   base-url: "https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT"
+#   api-key: "${AZURE_OPENAI_KEY}"
+#   model: "gpt-4o"
+
+filter:
+  enabled: true               # Enable/disable Layer 0 local filter
+  languages: "*"              # "*" = all languages, or list: [en, es, de, fr]
+  custom-words: []            # Additional words added by server owner
+  whitelist: []               # Words to exclude from filtering (reduce false positives)
+  leet-speak: true            # Normalize leet-speak before lookup
+  abbreviations: true         # Expand known foul abbreviations before checking
+  custom-abbreviations: {}    # Extra mappings, e.g. { "smfh": "shaking my f***ing head" }
+
+pipeline:
+  layer1-threshold: 0.7       # Score above which Layer 2 is invoked
+  async: true                 # Process moderation off the main thread
+  timeout-ms: 3000            # Max wait before allowing message through (hard ceiling — retries happen within this window)
+  fail-open: true             # If API unreachable, Layer 0 still active
+  message-mode: "block"       # block = cancel message entirely | mask = replace offensive words with ***
+  retry:
+    max-attempts: 3           # Total attempts per API call (1 = no retry). Retries are opportunistic within timeout-ms.
+    base-delay-ms: 500        # Initial backoff delay (doubles each retry: 500 → 1000 → 2000)
+    max-delay-ms: 5000        # Backoff cap (only relevant with generous timeout-ms values)
+
+actions:
+  warn:
+    message: "&cYour message was flagged. Please keep chat respectful."
+  mute:
+    duration-seconds: 300
+    message: "&cYou have been muted for 5 minutes."
+  escalate:
+    staff-permission: "chatsentinel.staff"
+    log-to-file: true
+
+# ── Escalation: automatic punishment scaling ─────────────────────────
+# Player scores increase with each offense and decay over time.
+# Thresholds map cumulative scores to actions.
+escalation:
+  enabled: true
+  score-weights:                         # Points added per verdict type
+    warn: 1
+    mute: 3
+    escalate: 5
+  decay:
+    points-per-day: 0.5                  # Score decays by this amount daily
+    min-score: 0                         # Score floor
+  thresholds:                            # Cumulative score → action
+    - { score: 3,  action: "warn" }
+    - { score: 6,  action: "mute", duration-seconds: 300 }
+    - { score: 12, action: "mute", duration-seconds: 1800 }
+    - { score: 20, action: "mute", duration-seconds: 86400 }
+    - { score: 30, action: "escalate" }  # Permanent action — staff review
+
+# ── Storage ──────────────────────────────────────────────────────────
+storage:
+  backend: "sqlite"                      # sqlite | mysql | postgresql
+
+  sqlite:
+    file: "chatsentinel.db"              # Relative to plugin data folder
+
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "chatsentinel"
+    username: "${DB_USER}"
+    password: "${DB_PASS}"
+    pool-size: 5
+
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "chatsentinel"
+    username: "${DB_USER}"
+    password: "${DB_PASS}"
+    pool-size: 5
+
+history:
+  messages-per-player: 10     # Recent messages stored per player in the in-memory ring buffer (lost on restart)
+  context-window: 25          # Total messages (across all nearby players) sent to Layer 2 per review
+  include-whispers: true      # Capture /msg, /tell, /w for context (still moderated by full pipeline)
+  include-scores: true        # Attach each player's current score to the Layer 2 context payload
+  context-radius: -1          # Only include messages from players within this block radius (-1 = same world, no limit)
+
+# ── Chat Log ───────────────────────────────────────────────────────────
+chat-log:
+  enabled: false              # Store ALL messages (not just flagged) in chatsentinel_chat table
+  ttl-days: 30                # Delete chat log entries older than this (0 = keep forever)
+
+retention:
+  log-ttl-days: 90            # Delete moderation log entries older than this (0 = keep forever)
+  player-ttl-days: 180        # Remove player records with no activity for this many days (0 = keep forever)
+  debug-ttl-days: 7           # Delete debug log DB entries older than this (0 = keep forever, caution: grows fast)
+  purge-interval-hours: 24    # How often the purge task runs (minimum: 1)
+
+rate-limit:
+  requests-per-second: 20     # Global API rate limit
+
+# ── Debug / Logging ────────────────────────────────────────────────────────────
+logging:
+  log-to-console: true        # Print info/warning/error messages to server console
+  log-to-file: true           # Write info/warning/error messages to plugins/ChatSentinel/chatsentinel.log (daily rotation)
+  log-to-database: false      # Store info/warning/error entries in chatsentinel_debug table
+  debug:
+    enabled: false            # When true, include DEBUG-level messages in all enabled outputs above
+    verbose-layers: false     # Log full API request/response bodies for Layer 1 and Layer 2
+    verbose-trie: false       # Log every trie match attempt (very noisy — use only for troubleshooting)
