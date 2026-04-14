@@ -28,6 +28,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${property("postgresqlVersion")}")
     implementation("org.bstats:bstats-bukkit:${property("bstatsVersion")}")
 
+    testImplementation("com.google.code.gson:gson:2.11.0")
     testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
