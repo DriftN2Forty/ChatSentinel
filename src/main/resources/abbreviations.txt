@@ -1,0 +1,48 @@
+# Abbreviation → expansion mappings (one per line, format: abbreviation=expansion)
+# These are matched as whole words only to avoid false positives.
+# Lines starting with # are comments. Blank lines are ignored.
+
+# English offensive abbreviations
+stfu=shut the fuck up
+gtfo=get the fuck out
+fml=fuck my life
+smh=shaking my head
+smfh=shaking my fucking head
+fk=fuck
+fkn=fucking
+fku=fuck you
+fck=fuck
+fcking=fucking
+fu=fuck you
+fubar=fucked up beyond all recognition
+ffs=for fuck's sake
+af=as fuck
+pos=piece of shit
+sob=son of a bitch
+lmfao=laughing my fucking ass off
+omfg=oh my fucking god
+wtf=what the fuck
+stfd=shut the fuck down
+kys=kill yourself
+kms=kill myself
+gfy=go fuck yourself
+gfys=go fuck yourself
+diaf=die in a fire
+sybau=shut your bitch ass up
+esad=eat shit and die
+lmao=laughing my ass off
+bs=bullshit
+bsh=bullshit
+sf=stupid fuck
+mf=motherfucker
+mfer=motherfucker
+mofo=motherfucker
+pov=point of view
+pofs=piece of fucking shit
+snafu=situation normal all fucked up
+jfc=jesus fucking christ
+ngr=nigger
+ngga=nigga
+cnt=cunt
+btch=bitch
+thot=that ho over there

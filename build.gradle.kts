@@ -28,7 +28,9 @@ dependencies {
     implementation("org.postgresql:postgresql:${property("postgresqlVersion")}")
     implementation("org.bstats:bstats-bukkit:${property("bstatsVersion")}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:${property("junitVersion")}")
+    testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:${property("mockbukkitVersion")}")
 }
 
