@@ -8,7 +8,6 @@ import io.github.driftn2forty.chatsentinel.history.PlayerHistoryTracker;
 import io.github.driftn2forty.chatsentinel.moderation.ModerationPipeline;
 import io.github.driftn2forty.chatsentinel.storage.PlayerData;
 import io.github.driftn2forty.chatsentinel.storage.PlayerRepository;
-import io.github.driftn2forty.chatsentinel.util.DebugLogger;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -29,18 +28,16 @@ public final class ChatListener implements Listener {
     private final PlayerRepository repository;
     private final PlayerHistoryTracker historyTracker;
     private final ChatLogWriter chatLogWriter;
-    private final DebugLogger logger;
     private final String messageMode;
     private final ConcurrentHashMap<UUID, ReentrantLock> playerLocks = new ConcurrentHashMap<>();
 
-    public ChatListener(ModerationPipeline pipeline, ActionDispatcher actionDispatcher, MuteManager muteManager, PlayerRepository repository, PlayerHistoryTracker historyTracker, ChatLogWriter chatLogWriter, DebugLogger logger, String messageMode) {
+    public ChatListener(ModerationPipeline pipeline, ActionDispatcher actionDispatcher, MuteManager muteManager, PlayerRepository repository, PlayerHistoryTracker historyTracker, ChatLogWriter chatLogWriter, String messageMode) {
         this.pipeline = pipeline;
         this.actionDispatcher = actionDispatcher;
         this.muteManager = muteManager;
         this.repository = repository;
         this.historyTracker = historyTracker;
         this.chatLogWriter = chatLogWriter;
-        this.logger = logger;
         this.messageMode = messageMode;
     }
 

@@ -141,14 +141,14 @@ public final class ChatSentinel extends JavaPlugin {
         final ChatLogWriter chatLogWriter = new ChatLogWriter(repository, pluginConfig.isChatLogEnabled(), debugLogger);
 
         // ── Listeners ────────────────────────────────────────────────
-        getServer().getPluginManager().registerEvents(new ChatListener(pipeline, actionDispatcher, muteManager, repository, historyTracker, chatLogWriter, debugLogger, pluginConfig.getMessageMode()), this);
-        getServer().getPluginManager().registerEvents(new WhisperListener(pipeline, actionDispatcher, muteManager, repository, historyTracker, chatLogWriter, debugLogger, pluginConfig.getMessageMode()), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(pipeline, actionDispatcher, muteManager, repository, historyTracker, chatLogWriter, pluginConfig.getMessageMode()), this);
+        getServer().getPluginManager().registerEvents(new WhisperListener(pipeline, actionDispatcher, muteManager, repository, historyTracker, chatLogWriter), this);
         getServer().getPluginManager().registerEvents(new SignListener(localFilter, debugLogger), this);
         getServer().getPluginManager().registerEvents(new BookListener(pipeline, actionDispatcher, muteManager, repository, debugLogger), this);
         getServer().getPluginManager().registerEvents(new AnvilListener(localFilter, debugLogger), this);
 
         // ── Command ──────────────────────────────────────────────────
-        commandHandler = new ChatSentinelCommand(this, repository, debugLogger);
+        commandHandler = new ChatSentinelCommand(this, repository);
         final PluginCommand cmd = getCommand("chatsentinel");
         if (cmd != null) {
             cmd.setExecutor(commandHandler);

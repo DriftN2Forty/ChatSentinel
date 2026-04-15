@@ -1,7 +1,6 @@
 package io.github.driftn2forty.chatsentinel.action;
 
 import io.github.driftn2forty.chatsentinel.storage.PlayerData;
-import io.github.driftn2forty.chatsentinel.storage.PlayerRepository;
 import io.github.driftn2forty.chatsentinel.storage.SQLiteRepository;
 import io.github.driftn2forty.chatsentinel.util.DebugLogger;
 import org.junit.jupiter.api.AfterEach;

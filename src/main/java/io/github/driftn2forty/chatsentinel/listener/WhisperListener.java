@@ -8,7 +8,6 @@ import io.github.driftn2forty.chatsentinel.history.PlayerHistoryTracker;
 import io.github.driftn2forty.chatsentinel.moderation.ModerationPipeline;
 import io.github.driftn2forty.chatsentinel.storage.PlayerData;
 import io.github.driftn2forty.chatsentinel.storage.PlayerRepository;
-import io.github.driftn2forty.chatsentinel.util.DebugLogger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,19 +31,15 @@ public final class WhisperListener implements Listener {
     private final PlayerRepository repository;
     private final PlayerHistoryTracker historyTracker;
     private final ChatLogWriter chatLogWriter;
-    private final DebugLogger logger;
-    private final String messageMode;
     private final ConcurrentHashMap<UUID, ReentrantLock> playerLocks = new ConcurrentHashMap<>();
 
-    public WhisperListener(ModerationPipeline pipeline, ActionDispatcher actionDispatcher, MuteManager muteManager, PlayerRepository repository, PlayerHistoryTracker historyTracker, ChatLogWriter chatLogWriter, DebugLogger logger, String messageMode) {
+    public WhisperListener(ModerationPipeline pipeline, ActionDispatcher actionDispatcher, MuteManager muteManager, PlayerRepository repository, PlayerHistoryTracker historyTracker, ChatLogWriter chatLogWriter) {
         this.pipeline = pipeline;
         this.actionDispatcher = actionDispatcher;
         this.muteManager = muteManager;
         this.repository = repository;
         this.historyTracker = historyTracker;
         this.chatLogWriter = chatLogWriter;
-        this.logger = logger;
-        this.messageMode = messageMode;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

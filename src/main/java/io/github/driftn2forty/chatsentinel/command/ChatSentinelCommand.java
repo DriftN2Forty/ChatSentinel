@@ -3,7 +3,6 @@ package io.github.driftn2forty.chatsentinel.command;
 import io.github.driftn2forty.chatsentinel.ChatSentinel;
 import io.github.driftn2forty.chatsentinel.storage.ModerationEntry;
 import io.github.driftn2forty.chatsentinel.storage.PlayerRepository;
-import io.github.driftn2forty.chatsentinel.util.DebugLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -22,7 +21,6 @@ public final class ChatSentinelCommand implements CommandExecutor, TabCompleter 
 
     private final ChatSentinel plugin;
     private final PlayerRepository repository;
-    private final DebugLogger logger;
     private final AtomicLong messagesProcessed = new AtomicLong();
     private final AtomicLong layer0Catches = new AtomicLong();
     private final AtomicLong layer1Calls = new AtomicLong();
@@ -33,10 +31,9 @@ public final class ChatSentinelCommand implements CommandExecutor, TabCompleter 
     private volatile long lastErrorTime = 0;
     private final long startTime = System.currentTimeMillis();
 
-    public ChatSentinelCommand(ChatSentinel plugin, PlayerRepository repository, DebugLogger logger) {
+    public ChatSentinelCommand(ChatSentinel plugin, PlayerRepository repository) {
         this.plugin = plugin;
         this.repository = repository;
-        this.logger = logger;
     }
 
     public void recordMessage() { messagesProcessed.incrementAndGet(); }
@@ -144,7 +141,6 @@ public final class ChatSentinelCommand implements CommandExecutor, TabCompleter 
         }
 
         final String targetName = args[1];
-        @SuppressWarnings("deprecation")
         final Player target = Bukkit.getPlayer(targetName);
         if (target == null) {
             sender.sendMessage(Component.text("Player not found or not online: " + targetName, NamedTextColor.RED));

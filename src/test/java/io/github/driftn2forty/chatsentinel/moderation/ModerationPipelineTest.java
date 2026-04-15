@@ -5,7 +5,6 @@ import io.github.driftn2forty.chatsentinel.filter.ChatNormalizer;
 import io.github.driftn2forty.chatsentinel.filter.LocalFilterLayer;
 import io.github.driftn2forty.chatsentinel.filter.ProfanityTrie;
 import io.github.driftn2forty.chatsentinel.moderation.layer1.OpenAIModerationClient;
-import io.github.driftn2forty.chatsentinel.moderation.layer2.LLMReviewClient;
 import io.github.driftn2forty.chatsentinel.util.DebugLogger;
 import io.github.driftn2forty.chatsentinel.util.HttpUtil;
 import io.github.driftn2forty.chatsentinel.util.RateLimiter;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Map;
 import java.util.logging.Logger;
 
