@@ -387,6 +387,13 @@ layer1:
     harassment: 1
     violence: 1
     illicit: 1
+  category-commands: {}                          # Per-category commands fired when that category is flagged
+  # Example:
+  # category-commands:
+  #   sexual/minors:
+  #     - "kick %player% Inappropriate content"
+  #   hate/threatening:
+  #     - "tempban %player% 1h Hate speech"
 
 # ── Layer 2: LLM Deep Review ─────────────────────────────────────────
 # Used for context-aware analysis of flagged messages. Defaults to OpenAI,
@@ -460,11 +467,15 @@ escalation:
     points-per-day: 0.5                  # Score decays by this amount daily
     min-score: 0                         # Score floor
   thresholds:                            # Cumulative score → action
-    - { score: 3,  action: "warn" }
-    - { score: 6,  action: "mute", duration-seconds: 300 }
-    - { score: 12, action: "mute", duration-seconds: 1800 }
-    - { score: 20, action: "mute", duration-seconds: 86400 }
-    - { score: 30, action: "escalate" }  # Permanent action — staff review
+    - { score: 3,  action: "warn", commands: [] }
+    - { score: 6,  action: "mute", duration-seconds: 300, commands: [] }
+    - { score: 12, action: "mute", duration-seconds: 1800, commands: [] }
+    - { score: 20, action: "mute", duration-seconds: 86400, commands: [] }
+    - { score: 30, action: "escalate", commands: [] }  # Permanent action — staff review
+  # Example with commands:
+  # thresholds:
+  #   - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentinel"] }
+  #   - { score: 30, action: "escalate", commands: ["ban %player% Repeated violations"] }
 
 # ── Storage ──────────────────────────────────────────────────────────
 storage:
@@ -726,6 +737,43 @@ If [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is 
 | `%chatsentinel_last_offense%` | Time since last offense | `2h ago` / `never` |
 
 These placeholders can be used in scoreboards, tab lists, holograms, or any plugin that supports PlaceholderAPI — letting staff see moderation state at a glance without running commands.
+
+### Custom Commands
+
+ChatSentinel can execute arbitrary console commands when a violation is detected. Commands are dispatched on the main server thread via `Bukkit.dispatchCommand` as the console sender. Two hooks are available:
+
+- **Per-threshold commands** — Defined in `escalation.thresholds[].commands`. Fired when a player's cumulative score crosses the threshold.
+- **Per-category commands** — Defined in `layer1.category-commands.<category>`. Fired when Layer 1 flags a specific moderation category.
+
+Category commands fire before threshold commands. Both support the following placeholder tokens:
+
+| Placeholder | Resolves to | Example |
+|---|---|---|
+| `%player%` | Player name | `Notch` |
+| `%uuid%` | Player UUID | `069a79f4-...` |
+| `%score%` | Player score after this offense | `6.0` |
+| `%score_before%` | Player score before this offense | `3.0` |
+| `%category%` | Highest flagged category (or empty) | `hate/threatening` |
+| `%moderation_score%` | Raw moderation API confidence score | `0.95` |
+| `%source%` | Event source | `chat`, `whisper`, `book` |
+| `%action%` | Escalation action taken | `warn`, `mute`, `escalate` |
+| `%duration%` | Mute duration in seconds (0 if not muted) | `300` |
+| `%layer%` | Layer that flagged the message | `0`, `1`, `2` |
+
+Example configuration:
+```yaml
+layer1:
+  category-commands:
+    sexual/minors:
+      - "kick %player% Inappropriate content"
+    hate/threatening:
+      - "tempban %player% 1h Hate speech"
+
+escalation:
+  thresholds:
+    - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentinel"] }
+    - { score: 30, action: "escalate", commands: ["ban %player% Repeated violations"] }
+```
 
 ### bStats
 

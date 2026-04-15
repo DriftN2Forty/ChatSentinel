@@ -88,4 +88,43 @@ class EscalationEngineTest {
         assertEquals(EscalationAction.Type.MUTE, engine.evaluate(10.0).type());
         assertEquals(EscalationAction.Type.ESCALATE, engine.evaluate(20.0).type());
     }
+
+    @Test
+    void thresholdWithCommandsPassesThroughToAction() {
+        final List<String> cmds = List.of("kick %player%", "say %player% was kicked");
+        final EscalationEngine engine = new EscalationEngine(List.of(
+                new Threshold(5, "warn", 0, cmds)
+        ));
+        final EscalationAction action = engine.evaluate(5.0);
+        assertEquals(EscalationAction.Type.WARN, action.type());
+        assertEquals(cmds, action.commands());
+    }
+
+    @Test
+    void thresholdWithoutCommandsReturnsEmptyList() {
+        final EscalationEngine engine = new EscalationEngine(List.of(
+                new Threshold(5, "mute", 300)
+        ));
+        final EscalationAction action = engine.evaluate(5.0);
+        assertEquals(EscalationAction.Type.MUTE, action.type());
+        assertEquals(List.of(), action.commands());
+    }
+
+    @Test
+    void muteThresholdWithCommandsIncludesBoth() {
+        final List<String> cmds = List.of("tempban %player% 1h");
+        final EscalationEngine engine = new EscalationEngine(List.of(
+                new Threshold(10, "mute", 600, cmds)
+        ));
+        final EscalationAction action = engine.evaluate(10.0);
+        assertEquals(EscalationAction.Type.MUTE, action.type());
+        assertEquals(600, action.durationSeconds());
+        assertEquals(cmds, action.commands());
+    }
+
+    @Test
+    void noneActionHasEmptyCommands() {
+        final EscalationAction none = EscalationAction.NONE;
+        assertEquals(List.of(), none.commands());
+    }
 }

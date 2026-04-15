@@ -35,6 +35,13 @@ layer1:
     harassment: 1
     violence: 1
     illicit: 1
+  category-commands: {}                          # Per-category commands fired when that category is flagged
+  # Example:
+  # category-commands:
+  #   sexual/minors:
+  #     - "kick %player% Inappropriate content"
+  #   hate/threatening:
+  #     - "tempban %player% 1h Hate speech"
 
 # ── Layer 2: LLM Deep Review ─────────────────────────────────────────
 # Used for context-aware analysis of flagged messages. Defaults to OpenAI,
@@ -108,11 +115,15 @@ escalation:
     points-per-day: 0.5                  # Score decays by this amount daily
     min-score: 0                         # Score floor
   thresholds:                            # Cumulative score → action
-    - { score: 3,  action: "warn" }
-    - { score: 6,  action: "mute", duration-seconds: 300 }
-    - { score: 12, action: "mute", duration-seconds: 1800 }
-    - { score: 20, action: "mute", duration-seconds: 86400 }
-    - { score: 30, action: "escalate" }  # Permanent action — staff review
+    - { score: 3,  action: "warn", commands: [] }
+    - { score: 6,  action: "mute", duration-seconds: 300, commands: [] }
+    - { score: 12, action: "mute", duration-seconds: 1800, commands: [] }
+    - { score: 20, action: "mute", duration-seconds: 86400, commands: [] }
+    - { score: 30, action: "escalate", commands: [] }  # Permanent action — staff review
+  # Example with commands:
+  # thresholds:
+  #   - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentinel"] }
+  #   - { score: 30, action: "escalate", commands: ["ban %player% Repeated violations"] }
 
 # ── Storage ──────────────────────────────────────────────────────────
 storage:

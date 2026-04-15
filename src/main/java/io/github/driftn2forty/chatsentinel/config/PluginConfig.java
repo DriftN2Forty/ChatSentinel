@@ -121,9 +121,21 @@ public final class PluginConfig {
             final double score = ((Number) entry.get("score")).doubleValue();
             final String action = (String) entry.get("action");
             final long duration = entry.containsKey("duration-seconds") ? ((Number) entry.get("duration-seconds")).longValue() : 0;
-            thresholds.add(new EscalationEngine.Threshold(score, action, duration));
+            @SuppressWarnings("unchecked") final List<String> commands = entry.containsKey("commands") ? (List<String>) entry.get("commands") : List.of();
+            thresholds.add(new EscalationEngine.Threshold(score, action, duration, commands));
         }
         return thresholds;
+    }
+
+    public Map<String, List<String>> getLayer1CategoryCommands() {
+        final Map<String, List<String>> map = new HashMap<>();
+        final ConfigurationSection section = config.getConfigurationSection("layer1.category-commands");
+        if (section != null) {
+            for (final String key : section.getKeys(false)) {
+                map.put(key, section.getStringList(key));
+            }
+        }
+        return map;
     }
 
     // ── Storage ──────────────────────────────────────────────────────

@@ -25,9 +25,9 @@ public final class EscalationEngine {
             return EscalationAction.NONE;
         }
         return switch (matched.action().toLowerCase()) {
-            case "warn" -> EscalationAction.WARN;
-            case "mute" -> new EscalationAction(EscalationAction.Type.MUTE, matched.durationSeconds());
-            case "escalate" -> EscalationAction.ESCALATE;
+            case "warn" -> new EscalationAction(EscalationAction.Type.WARN, 0, matched.commands());
+            case "mute" -> new EscalationAction(EscalationAction.Type.MUTE, matched.durationSeconds(), matched.commands());
+            case "escalate" -> new EscalationAction(EscalationAction.Type.ESCALATE, 0, matched.commands());
             default -> EscalationAction.NONE;
         };
     }
@@ -36,13 +36,17 @@ public final class EscalationEngine {
         return thresholds;
     }
 
-    public record Threshold(double score, String action, long durationSeconds) {
+    public record Threshold(double score, String action, long durationSeconds, List<String> commands) {
         public Threshold(double score, String action) {
-            this(score, action, 0);
+            this(score, action, 0, List.of());
+        }
+
+        public Threshold(double score, String action, long durationSeconds) {
+            this(score, action, durationSeconds, List.of());
         }
     }
 
-    public record EscalationAction(Type type, long durationSeconds) {
+    public record EscalationAction(Type type, long durationSeconds, List<String> commands) {
 
         public enum Type {
             NONE,
@@ -51,8 +55,8 @@ public final class EscalationEngine {
             ESCALATE
         }
 
-        public static final EscalationAction NONE = new EscalationAction(Type.NONE, 0);
-        public static final EscalationAction WARN = new EscalationAction(Type.WARN, 0);
-        public static final EscalationAction ESCALATE = new EscalationAction(Type.ESCALATE, 0);
+        public static final EscalationAction NONE = new EscalationAction(Type.NONE, 0, List.of());
+        public static final EscalationAction WARN = new EscalationAction(Type.WARN, 0, List.of());
+        public static final EscalationAction ESCALATE = new EscalationAction(Type.ESCALATE, 0, List.of());
     }
 }

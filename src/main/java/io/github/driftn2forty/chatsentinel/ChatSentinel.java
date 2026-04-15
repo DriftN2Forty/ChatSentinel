@@ -134,7 +134,7 @@ public final class ChatSentinel extends JavaPlugin {
         final EscalationEngine escalationEngine = new EscalationEngine(pluginConfig.getEscalationThresholds());
         muteManager = new MuteManager(repository, debugLogger);
         final StaffNotifier staffNotifier = new StaffNotifier(pluginConfig.getStaffPermission(), debugLogger);
-        final ActionDispatcher actionDispatcher = new ActionDispatcher(scoreCalculator, escalationEngine, muteManager, staffNotifier, repository, debugLogger, pluginConfig.getWarnMessage(), pluginConfig.getMuteMessage(), pluginConfig.getMuteDurationSeconds());
+        final ActionDispatcher actionDispatcher = new ActionDispatcher(scoreCalculator, escalationEngine, muteManager, staffNotifier, repository, debugLogger, pluginConfig.getWarnMessage(), pluginConfig.getMuteMessage(), pluginConfig.getMuteDurationSeconds(), this, pluginConfig.getLayer1CategoryCommands());
 
         // ── History ──────────────────────────────────────────────────
         final PlayerHistoryTracker historyTracker = new PlayerHistoryTracker(pluginConfig.getMessagesPerPlayer(), pluginConfig.isIncludeWhispers());
