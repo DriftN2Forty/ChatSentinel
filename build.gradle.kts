@@ -49,12 +49,12 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
 
-        relocate("com.zaxxer.hikari", "io.github.driftn2forty.chatsentinel.lib.hikari")
-        relocate("org.xerial", "io.github.driftn2forty.chatsentinel.lib.xerial")
-        relocate("org.sqlite", "io.github.driftn2forty.chatsentinel.lib.sqlite")
-        relocate("com.mysql", "io.github.driftn2forty.chatsentinel.lib.mysql")
-        relocate("org.postgresql", "io.github.driftn2forty.chatsentinel.lib.postgresql")
-        relocate("org.bstats", "io.github.driftn2forty.chatsentinel.lib.bstats")
+        relocate("com.zaxxer.hikari", "io.github.driftn2forty.chatsentry.lib.hikari")
+        relocate("org.xerial", "io.github.driftn2forty.chatsentry.lib.xerial")
+        relocate("org.sqlite", "io.github.driftn2forty.chatsentry.lib.sqlite")
+        relocate("com.mysql", "io.github.driftn2forty.chatsentry.lib.mysql")
+        relocate("org.postgresql", "io.github.driftn2forty.chatsentry.lib.postgresql")
+        relocate("org.bstats", "io.github.driftn2forty.chatsentry.lib.bstats")
     }
 
     build {

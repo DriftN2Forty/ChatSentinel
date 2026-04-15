@@ -6,9 +6,9 @@ Maintain a CHANGELOG.md following the Keep a Changelog format (https://keepachan
 
 Target Java 21. Use records, sealed interfaces, and pattern matching where appropriate. Mark fields and local variables `final` when they don't change. No wildcard imports. No unused imports.
 
-Package namespace: io.github.driftn2forty.chatsentinel
+Package namespace: io.github.driftn2forty.chatsentry
 
-All shaded dependencies must be relocated under io.github.driftn2forty.chatsentinel.lib.* to avoid classpath conflicts.
+All shaded dependencies must be relocated under io.github.driftn2forty.chatsentry.lib.* to avoid classpath conflicts.
 
 All API calls and database I/O must run off the main server thread (async). Never block the main tick loop.
 

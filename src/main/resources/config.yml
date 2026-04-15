@@ -99,7 +99,7 @@ actions:
     duration-seconds: 300
     message: "&cYou have been muted for 5 minutes."
   escalate:
-    staff-permission: "chatsentinel.staff"
+    staff-permission: "chatsentry.staff"
     log-to-file: true
 
 # ── Escalation: automatic punishment scaling ─────────────────────────
@@ -122,7 +122,7 @@ escalation:
     - { score: 30, action: "escalate", commands: [] }  # Permanent action — staff review
   # Example with commands:
   # thresholds:
-  #   - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentinel"] }
+  #   - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentry"] }
   #   - { score: 30, action: "escalate", commands: ["ban %player% Repeated violations"] }
 
 # ── Storage ──────────────────────────────────────────────────────────
@@ -130,12 +130,12 @@ storage:
   backend: "sqlite"                      # sqlite | mysql | postgresql
 
   sqlite:
-    file: "chatsentinel.db"              # Relative to plugin data folder
+    file: "chatsentry.db"              # Relative to plugin data folder
 
   mysql:
     host: "localhost"
     port: 3306
-    database: "chatsentinel"
+    database: "chatsentry"
     username: "${DB_USER}"
     password: "${DB_PASS}"
     pool-size: 5
@@ -143,7 +143,7 @@ storage:
   postgresql:
     host: "localhost"
     port: 5432
-    database: "chatsentinel"
+    database: "chatsentry"
     username: "${DB_USER}"
     password: "${DB_PASS}"
     pool-size: 5
@@ -157,7 +157,7 @@ history:
 
 # ── Chat Log ───────────────────────────────────────────────────────────
 chat-log:
-  enabled: false              # Store ALL messages (not just flagged) in chatsentinel_chat table
+  enabled: false              # Store ALL messages (not just flagged) in chatsentry_chat table
   ttl-days: 30                # Delete chat log entries older than this (0 = keep forever)
 
 retention:
@@ -172,8 +172,8 @@ rate-limit:
 # ── Debug / Logging ────────────────────────────────────────────────────────────
 logging:
   log-to-console: true        # Print info/warning/error messages to server console
-  log-to-file: true           # Write info/warning/error messages to plugins/ChatSentinel/chatsentinel.log (daily rotation)
-  log-to-database: false      # Store info/warning/error entries in chatsentinel_debug table
+  log-to-file: true           # Write info/warning/error messages to plugins/ChatSentry/chatsentry.log (daily rotation)
+  log-to-database: false      # Store info/warning/error entries in chatsentry_debug table
   debug:
     enabled: false            # When true, include DEBUG-level messages in all enabled outputs above
     verbose-layers: false     # Log full API request/response bodies for Layer 1 and Layer 2

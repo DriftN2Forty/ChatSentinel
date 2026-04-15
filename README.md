@@ -1,8 +1,8 @@
-# ChatSentinel
+# ChatSentry
 
-A multi-layered chat moderation plugin for Minecraft Paper servers. ChatSentinel intercepts player chat messages and runs them through a three-layer moderation pipeline — local trie filter, moderation API, and LLM deep review — to catch toxic, harmful, or rule-breaking content in real time.
+A multi-layered chat moderation plugin for Minecraft Paper servers. ChatSentry intercepts player chat messages and runs them through a three-layer moderation pipeline — local trie filter, moderation API, and LLM deep review — to catch toxic, harmful, or rule-breaking content in real time.
 
-**GitHub:** [https://github.com/DriftN2Forty/ChatSentinel](https://github.com/DriftN2Forty/ChatSentinel)
+**GitHub:** [https://github.com/DriftN2Forty/ChatSentry](https://github.com/DriftN2Forty/ChatSentry)
 
 ---
 
@@ -45,7 +45,7 @@ Player Message
 
 ### Message Handling: Block vs Mask
 
-When a message is flagged, ChatSentinel can either **block** it entirely (the sender sees an error, nobody else sees anything) or **mask** offensive portions (replace matched words with `***` and deliver the censored message). Controlled by `pipeline.message-mode` in config.
+When a message is flagged, ChatSentry can either **block** it entirely (the sender sees an error, nobody else sees anything) or **mask** offensive portions (replace matched words with `***` and deliver the censored message). Controlled by `pipeline.message-mode` in config.
 
 - **`block`** (default) — Message is cancelled. Only the sender sees a warning. Simplest and safest — no risk of partial leaks.
 - **`mask`** — Offensive tokens are replaced with asterisks (`f***`) and the modified message is delivered. Useful for lighter moderation, but can produce awkward output when multiple words are masked.
@@ -54,7 +54,7 @@ Layer 0 (trie) drives masking because it identifies exact character spans. Layer
 
 ### Beyond Chat: Signs, Books & Anvils
 
-Players routinely bypass chat filters by writing offensive content on **signs**, in **books**, and through **anvil renames**. ChatSentinel intercepts all three. Players with the `chatsentinel.bypass` permission skip all moderation — including signs, books, and anvils.
+Players routinely bypass chat filters by writing offensive content on **signs**, in **books**, and through **anvil renames**. ChatSentry intercepts all three. Players with the `chatsentry.bypass` permission skip all moderation — including signs, books, and anvils.
 
 | Surface | Event | How it works |
 |---|---|---|
@@ -104,7 +104,7 @@ Each trie node uses a **compact sorted `char[]` + `TrieNode[]`** (binary-searche
 ## Project Structure
 
 ```
-ChatSentinel/
+ChatSentry/
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml                    # GitHub Actions — build + test on push/PR
@@ -117,8 +117,8 @@ ChatSentinel/
 │
 └── src/
     └── main/
-        ├── java/io/github/driftn2forty/chatsentinel/
-        │   ├── ChatSentinel.java                    # Plugin entry point (extends JavaPlugin)
+        ├── java/io/github/driftn2forty/chatsentry/
+        │   ├── ChatSentry.java                    # Plugin entry point (extends JavaPlugin)
         │   ├── config/
         │   │   └── PluginConfig.java                # Typed config wrapper (YAML-backed)
         │   │
@@ -163,13 +163,13 @@ ChatSentinel/
         │   │   ├── PlayerHistoryTracker.java        # Per-player message ring buffer (in-memory, not persisted)
         │   │   ├── ContextAssembler.java             # Builds multi-player context payload for Layer 2
         │   │   ├── ChatMessage.java                  # Message record: type (chat|whisper), sender, target, text, timestamp
-        │   │   └── ChatLogWriter.java                # Writes all messages to chatsentinel_chat table (when enabled)
+        │   │   └── ChatLogWriter.java                # Writes all messages to chatsentry_chat table (when enabled)
         │   │
         │   ├── command/
-        │   │   └── ChatSentinelCommand.java         # /chatsentinel reload|status|history|purge
+        │   │   └── ChatSentryCommand.java         # /chatsentry reload|status|history|purge
         │   │
         │   ├── hook/
-        │   │   ├── PlaceholderAPIHook.java           # Registers %chatsentinel_*% placeholders (soft dependency)
+        │   │   ├── PlaceholderAPIHook.java           # Registers %chatsentry_*% placeholders (soft dependency)
         │   │   └── BStatsHook.java                   # Anonymous usage metrics via bStats
         │   │
         │   └── util/
@@ -194,7 +194,7 @@ ChatSentinel/
             └── abbreviations.txt                     # Hand-curated abbreviation → expansion mappings
 
     └── test/
-        └── java/io/github/driftn2forty/chatsentinel/
+        └── java/io/github/driftn2forty/chatsentry/
             ├── filter/
             │   ├── ProfanityTrieTest.java            # Trie insert, lookup, prefix sharing, unicode
             │   ├── ChatNormalizerTest.java            # Leet-speak → plain text conversion
@@ -236,25 +236,25 @@ All player and moderation data is stored using a **UUID + JSON blob** pattern. T
 
 ```sql
 -- Player state: score, mute status, preferences
-CREATE TABLE chatsentinel_players (
+CREATE TABLE chatsentry_players (
     uuid         CHAR(36)  PRIMARY KEY,
     data         TEXT       NOT NULL,    -- JSON blob (PlayerData)
     updated_at   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Moderation audit log: every flagged event
-CREATE TABLE chatsentinel_log (
+CREATE TABLE chatsentry_log (
     id           INTEGER    PRIMARY KEY AUTOINCREMENT,
     uuid         CHAR(36)  NOT NULL,
     data         TEXT       NOT NULL,    -- JSON blob (ModerationEntry)
     created_at   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_log_uuid ON chatsentinel_log (uuid);
-CREATE INDEX idx_log_created ON chatsentinel_log (created_at);
+CREATE INDEX idx_log_uuid ON chatsentry_log (uuid);
+CREATE INDEX idx_log_created ON chatsentry_log (created_at);
 
 -- Debug log: pipeline decisions, API calls, timing (only when debug.log-to-database is true)
-CREATE TABLE chatsentinel_debug (
+CREATE TABLE chatsentry_debug (
     id           INTEGER    PRIMARY KEY AUTOINCREMENT,
     level        VARCHAR(8) NOT NULL,    -- DEBUG, INFO, WARN, ERROR
     source       VARCHAR(64) NOT NULL,   -- Class/component name
@@ -262,10 +262,10 @@ CREATE TABLE chatsentinel_debug (
     created_at   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_debug_created ON chatsentinel_debug (created_at);
+CREATE INDEX idx_debug_created ON chatsentry_debug (created_at);
 
 -- Full chat log: all messages, not just flagged (only when chat-log.enabled is true)
-CREATE TABLE chatsentinel_chat (
+CREATE TABLE chatsentry_chat (
     id           INTEGER    PRIMARY KEY AUTOINCREMENT,
     uuid         CHAR(36)  NOT NULL,
     player_name  VARCHAR(16) NOT NULL,
@@ -274,8 +274,8 @@ CREATE TABLE chatsentinel_chat (
     created_at   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_chat_uuid ON chatsentinel_chat (uuid);
-CREATE INDEX idx_chat_created ON chatsentinel_chat (created_at);
+CREATE INDEX idx_chat_uuid ON chatsentry_chat (uuid);
+CREATE INDEX idx_chat_created ON chatsentry_chat (created_at);
 ```
 
 **Why this approach over normalized tables:**
@@ -305,7 +305,7 @@ Recent messages are held **in memory only** (not persisted in the player JSON). 
 
 Score decay uses **lazy evaluation**: each time a player record is accessed, the plugin checks `lastDecayTimestamp` against the current time. If enough time has passed (based on `escalation.decay.points-per-day`), the score is decayed proportionally and `lastDecayTimestamp` is updated. This avoids scheduled tasks iterating over offline players and guarantees scores are always current when read.
 
-The **`ModerationEntry` JSON blob** (stored in `chatsentinel_log`) contains:
+The **`ModerationEntry` JSON blob** (stored in `chatsentry_log`) contains:
 
 ```json
 {
@@ -451,7 +451,7 @@ actions:
     duration-seconds: 300
     message: "&cYou have been muted for 5 minutes."
   escalate:
-    staff-permission: "chatsentinel.staff"
+    staff-permission: "chatsentry.staff"
     log-to-file: true
 
 # ── Escalation: automatic punishment scaling ─────────────────────────
@@ -474,7 +474,7 @@ escalation:
     - { score: 30, action: "escalate", commands: [] }  # Permanent action — staff review
   # Example with commands:
   # thresholds:
-  #   - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentinel"] }
+  #   - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentry"] }
   #   - { score: 30, action: "escalate", commands: ["ban %player% Repeated violations"] }
 
 # ── Storage ──────────────────────────────────────────────────────────
@@ -482,12 +482,12 @@ storage:
   backend: "sqlite"                      # sqlite | mysql | postgresql
 
   sqlite:
-    file: "chatsentinel.db"              # Relative to plugin data folder
+    file: "chatsentry.db"              # Relative to plugin data folder
 
   mysql:
     host: "localhost"
     port: 3306
-    database: "chatsentinel"
+    database: "chatsentry"
     username: "${DB_USER}"
     password: "${DB_PASS}"
     pool-size: 5
@@ -495,7 +495,7 @@ storage:
   postgresql:
     host: "localhost"
     port: 5432
-    database: "chatsentinel"
+    database: "chatsentry"
     username: "${DB_USER}"
     password: "${DB_PASS}"
     pool-size: 5
@@ -509,7 +509,7 @@ history:
 
 # ── Chat Log ───────────────────────────────────────────────────────────
 chat-log:
-  enabled: false              # Store ALL messages (not just flagged) in chatsentinel_chat table
+  enabled: false              # Store ALL messages (not just flagged) in chatsentry_chat table
   ttl-days: 30                # Delete chat log entries older than this (0 = keep forever)
 
 retention:
@@ -524,8 +524,8 @@ rate-limit:
 # ── Debug / Logging ────────────────────────────────────────────────────────────
 logging:
   log-to-console: true        # Print info/warning/error messages to server console
-  log-to-file: true           # Write info/warning/error messages to plugins/ChatSentinel/chatsentinel.log (daily rotation)
-  log-to-database: false      # Store info/warning/error entries in chatsentinel_debug table
+  log-to-file: true           # Write info/warning/error messages to plugins/ChatSentry/chatsentry.log (daily rotation)
+  log-to-database: false      # Store info/warning/error entries in chatsentry_debug table
   debug:
     enabled: false            # When true, include DEBUG-level messages in all enabled outputs above
     verbose-layers: false     # Log full API request/response bodies for Layer 1 and Layer 2
@@ -537,15 +537,15 @@ logging:
 
 | Command | Description | Permission |
 |---|---|---|
-| `/chatsentinel reload` | Reload config from disk | `chatsentinel.admin` |
-| `/chatsentinel status` | Show pipeline health & stats | `chatsentinel.admin` |
-| `/chatsentinel history <player>` | View recent flagged messages | `chatsentinel.staff` |
-| `/chatsentinel purge [days]` | Manually purge logs older than N days (default: config value) | `chatsentinel.admin` |
+| `/chatsentry reload` | Reload config from disk | `chatsentry.admin` |
+| `/chatsentry status` | Show pipeline health & stats | `chatsentry.admin` |
+| `/chatsentry history <player>` | View recent flagged messages | `chatsentry.staff` |
+| `/chatsentry purge [days]` | Manually purge logs older than N days (default: config value) | `chatsentry.admin` |
 
-### `/chatsentinel status` Output
+### `/chatsentry status` Output
 
 ```
-ChatSentinel v1.0.0
+ChatSentry v1.0.0
   API latency (Layer 1): avg 142ms / p99 310ms
   API latency (Layer 2): avg 580ms / p99 1120ms
   Messages processed: 12,847 total (214/hr)
@@ -560,9 +560,9 @@ All counters reset on plugin reload.
 
 | Permission | Description | Default |
 |---|---|---|
-| `chatsentinel.bypass` | Skip all moderation (chat, whispers, signs, books, anvils) | `false` |
-| `chatsentinel.staff` | Receive escalation alerts | `op` |
-| `chatsentinel.admin` | Full admin access | `op` |
+| `chatsentry.bypass` | Skip all moderation (chat, whispers, signs, books, anvils) | `false` |
+| `chatsentry.staff` | Receive escalation alerts | `op` |
+| `chatsentry.admin` | Full admin access | `op` |
 
 ## Build & Run
 
@@ -575,11 +575,11 @@ All counters reset on plugin reload.
 # Run all tests
 ./gradlew test
 
-# Output: build/libs/ChatSentinel-<version>.jar    (shaded, production-ready)
+# Output: build/libs/ChatSentry-<version>.jar    (shaded, production-ready)
 # Copy to your Paper server's plugins/ directory
 ```
 
-The build uses the **Gradle Shadow plugin** to shade and relocate runtime dependencies (HikariCP, JDBC drivers, bStats) under `io.github.driftn2forty.chatsentinel.lib.*`. This prevents version conflicts when other plugins bundle the same libraries. Shadow is configured to replace the default jar (`archiveClassifier.set("")`), so the single output jar is the deployable artifact.
+The build uses the **Gradle Shadow plugin** to shade and relocate runtime dependencies (HikariCP, JDBC drivers, bStats) under `io.github.driftn2forty.chatsentry.lib.*`. This prevents version conflicts when other plugins bundle the same libraries. Shadow is configured to replace the default jar (`archiveClassifier.set("")`), so the single output jar is the deployable artifact.
 
 ## Dependencies
 
@@ -593,14 +593,14 @@ The build uses the **Gradle Shadow plugin** to shade and relocate runtime depend
 | MySQL Connector/J | Always shaded into the jar; only instantiated if `storage.backend: mysql` |
 | PostgreSQL JDBC | Always shaded into the jar; only instantiated if `storage.backend: postgresql` |
 | bStats | Anonymous usage metrics (shaded + relocated) |
-| PlaceholderAPI | Optional soft dependency — exposes `%chatsentinel_*%` placeholders |
+| PlaceholderAPI | Optional soft dependency — exposes `%chatsentry_*%` placeholders |
 | JUnit 5 | Unit testing framework (test only) |
 | MockBukkit | Paper API mocking for unit tests (test only) |
 | Gradle Shadow Plugin | Shades and relocates runtime dependencies into the plugin jar |
 | Minotaur (`com.modrinth.minotaur`) | Gradle plugin — automated publishing to Modrinth (build only) |
 | Hangar Publish (`io.papermc.hangar-publish-plugin`) | Gradle plugin — automated publishing to Hangar (build only) |
 
-All shaded dependencies are **relocated** under `io.github.driftn2forty.chatsentinel.lib.*` to prevent classpath conflicts with other plugins that bundle the same libraries. All drivers (SQLite, MySQL, PostgreSQL) and HikariCP are included in every build — the jar is self-contained. At runtime, only the configured backend's driver is instantiated; the others sit in the jar unused.
+All shaded dependencies are **relocated** under `io.github.driftn2forty.chatsentry.lib.*` to prevent classpath conflicts with other plugins that bundle the same libraries. All drivers (SQLite, MySQL, PostgreSQL) and HikariCP are included in every build — the jar is self-contained. At runtime, only the configured backend's driver is instantiated; the others sit in the jar unused.
 
 ## CI/CD
 
@@ -679,7 +679,7 @@ version = "1.0.0"
 `paper-plugin.yml` references it via token replacement so they stay in sync automatically:
 
 ```yaml
-name: ChatSentinel
+name: ChatSentry
 version: ${version}
 ```
 
@@ -726,21 +726,21 @@ All steps are performed on **GitHub's website** — no command line required.
 
 ### PlaceholderAPI
 
-If [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is installed, ChatSentinel registers the following placeholders automatically (soft dependency — the plugin works fine without it):
+If [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is installed, ChatSentry registers the following placeholders automatically (soft dependency — the plugin works fine without it):
 
 | Placeholder | Returns | Example |
 |---|---|---|
-| `%chatsentinel_score%` | Player's current moderation score | `4.5` |
-| `%chatsentinel_muted%` | Whether the player is currently muted | `true` / `false` |
-| `%chatsentinel_mute_remaining%` | Time left on active mute (human-readable) | `4m 32s` / `—` |
-| `%chatsentinel_total_offenses%` | Lifetime offense count | `7` |
-| `%chatsentinel_last_offense%` | Time since last offense | `2h ago` / `never` |
+| `%chatsentry_score%` | Player's current moderation score | `4.5` |
+| `%chatsentry_muted%` | Whether the player is currently muted | `true` / `false` |
+| `%chatsentry_mute_remaining%` | Time left on active mute (human-readable) | `4m 32s` / `—` |
+| `%chatsentry_total_offenses%` | Lifetime offense count | `7` |
+| `%chatsentry_last_offense%` | Time since last offense | `2h ago` / `never` |
 
 These placeholders can be used in scoreboards, tab lists, holograms, or any plugin that supports PlaceholderAPI — letting staff see moderation state at a glance without running commands.
 
 ### Custom Commands
 
-ChatSentinel can execute arbitrary console commands when a violation is detected. Commands are dispatched on the main server thread via `Bukkit.dispatchCommand` as the console sender. Two hooks are available:
+ChatSentry can execute arbitrary console commands when a violation is detected. Commands are dispatched on the main server thread via `Bukkit.dispatchCommand` as the console sender. Two hooks are available:
 
 - **Per-threshold commands** — Defined in `escalation.thresholds[].commands`. Fired when a player's cumulative score crosses the threshold.
 - **Per-category commands** — Defined in `layer1.category-commands.<category>`. Fired when Layer 1 flags a specific moderation category.
@@ -771,15 +771,15 @@ layer1:
 
 escalation:
   thresholds:
-    - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentinel"] }
+    - { score: 3,  action: "warn", commands: ["say %player% was warned by ChatSentry"] }
     - { score: 30, action: "escalate", commands: ["ban %player% Repeated violations"] }
 ```
 
 ### bStats
 
-ChatSentinel includes [bStats](https://bstats.org) for anonymous, aggregate usage metrics. **No player data, messages, or API keys are ever transmitted.** bStats is controlled globally via `plugins/bStats/config.yml` — there is no plugin-level toggle (consistent with standard Paper plugin conventions).
+ChatSentry includes [bStats](https://bstats.org) for anonymous, aggregate usage metrics. **No player data, messages, or API keys are ever transmitted.** bStats is controlled globally via `plugins/bStats/config.yml` — there is no plugin-level toggle (consistent with standard Paper plugin conventions).
 
-In addition to bStats' built-in server metrics (Java version, server software, player count, etc.), ChatSentinel submits the following **custom charts**:
+In addition to bStats' built-in server metrics (Java version, server software, player count, etc.), ChatSentry submits the following **custom charts**:
 
 | Chart | Type | What it reports |
 |---|---|---|
