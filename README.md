@@ -359,6 +359,34 @@ layer1:
   base-url: "https://api.openai.com"     # Base URL (no trailing slash, no path)
   api-key: "${OPENAI_API_KEY}"           # Supports env var substitution with ${VAR}
   model: "omni-moderation-latest"
+  category-thresholds:                           # Per-category confidence override (default: pipeline.layer1-threshold)
+    sexual/minors: 0.3                           # Strictest — flag with minimal confidence
+    self-harm/instructions: 0.4
+    self-harm/intent: 0.4
+    hate/threatening: 0.5
+    harassment/threatening: 0.5
+    illicit/violent: 0.5
+    self-harm: 0.6
+    hate: 0.6
+    violence/graphic: 0.6
+    harassment: 0.7
+    sexual: 0.7
+    violence: 0.7
+    illicit: 0.7
+  category-weights:                              # Per-category score weight override (default: escalation.score-weights based on verdict)
+    sexual/minors: 5                             # Immediate heavy scoring — hits mute threshold fast
+    self-harm/instructions: 5
+    hate/threatening: 4
+    harassment/threatening: 4
+    illicit/violent: 4
+    self-harm/intent: 3
+    self-harm: 3
+    hate: 3
+    violence/graphic: 3
+    sexual: 2
+    harassment: 1
+    violence: 1
+    illicit: 1
 
 # ── Layer 2: LLM Deep Review ─────────────────────────────────────────
 # Used for context-aware analysis of flagged messages. Defaults to OpenAI,

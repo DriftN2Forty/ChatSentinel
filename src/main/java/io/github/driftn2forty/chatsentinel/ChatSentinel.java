@@ -100,7 +100,7 @@ public final class ChatSentinel extends JavaPlugin {
                 getLogger().warning("Layer 1 enabled but api-key is not set — disabling Layer 1.");
                 layer1Active = false;
             } else {
-                layer1Client = new OpenAIModerationClient(pluginConfig.getLayer1BaseUrl(), apiKey, pluginConfig.getLayer1Model(), pluginConfig.getLayer1Threshold(), httpUtil, rateLimiter, debugLogger);
+                layer1Client = new OpenAIModerationClient(pluginConfig.getLayer1BaseUrl(), apiKey, pluginConfig.getLayer1Model(), pluginConfig.getLayer1Threshold(), pluginConfig.getLayer1CategoryThresholds(), httpUtil, rateLimiter, debugLogger);
             }
         }
         if (!layer1Active) {
@@ -130,7 +130,7 @@ public final class ChatSentinel extends JavaPlugin {
         final ModerationPipeline pipeline = new ModerationPipeline(localFilter, layer1Client, layer2Client, layer1Active, layer2Active, pluginConfig.getLayer1Threshold(), pluginConfig.getTimeoutMs(), pluginConfig.isFailOpen(), pluginConfig.getRetryMaxAttempts(), pluginConfig.getRetryBaseDelayMs(), pluginConfig.getRetryMaxDelayMs(), pluginConfig.getMessageMode(), debugLogger);
 
         // ── Action / Escalation ──────────────────────────────────────
-        final ScoreCalculator scoreCalculator = new ScoreCalculator(pluginConfig.getScoreWeightWarn(), pluginConfig.getScoreWeightMute(), pluginConfig.getScoreWeightEscalate(), pluginConfig.getDecayPointsPerDay(), pluginConfig.getDecayMinScore());
+        final ScoreCalculator scoreCalculator = new ScoreCalculator(pluginConfig.getScoreWeightWarn(), pluginConfig.getScoreWeightMute(), pluginConfig.getScoreWeightEscalate(), pluginConfig.getDecayPointsPerDay(), pluginConfig.getDecayMinScore(), pluginConfig.getLayer1CategoryWeights());
         final EscalationEngine escalationEngine = new EscalationEngine(pluginConfig.getEscalationThresholds());
         muteManager = new MuteManager(repository, debugLogger);
         final StaffNotifier staffNotifier = new StaffNotifier(pluginConfig.getStaffPermission(), debugLogger);

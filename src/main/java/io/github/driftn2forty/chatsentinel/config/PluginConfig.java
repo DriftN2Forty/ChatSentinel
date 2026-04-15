@@ -29,6 +29,28 @@ public final class PluginConfig {
     public String getLayer1ApiKey() { return resolveEnvVars(config.getString("layer1.api-key", "")); }
     public String getLayer1Model() { return config.getString("layer1.model", "omni-moderation-latest"); }
 
+    public Map<String, Double> getLayer1CategoryThresholds() {
+        final Map<String, Double> map = new HashMap<>();
+        final ConfigurationSection section = config.getConfigurationSection("layer1.category-thresholds");
+        if (section != null) {
+            for (final String key : section.getKeys(false)) {
+                map.put(key, section.getDouble(key));
+            }
+        }
+        return map;
+    }
+
+    public Map<String, Double> getLayer1CategoryWeights() {
+        final Map<String, Double> map = new HashMap<>();
+        final ConfigurationSection section = config.getConfigurationSection("layer1.category-weights");
+        if (section != null) {
+            for (final String key : section.getKeys(false)) {
+                map.put(key, section.getDouble(key));
+            }
+        }
+        return map;
+    }
+
     // ── Layer 2 ──────────────────────────────────────────────────────
     public boolean isLayer2Enabled() { return config.getBoolean("layer2.enabled", false); }
     public String getLayer2BaseUrl() { return config.getString("layer2.base-url", "https://api.openai.com"); }

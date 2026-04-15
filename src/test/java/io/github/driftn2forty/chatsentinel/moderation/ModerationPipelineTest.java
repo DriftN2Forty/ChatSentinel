@@ -15,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,7 +99,7 @@ class ModerationPipelineTest {
     void failOpenReturnAllowOnLayer1Timeout() {
         final HttpUtil httpUtil = new HttpUtil();
         final RateLimiter rateLimiter = new RateLimiter(100);
-        final OpenAIModerationClient layer1 = new OpenAIModerationClient("http://localhost:1", "fake-key", "test", 0.7, httpUtil, rateLimiter, logger);
+        final OpenAIModerationClient layer1 = new OpenAIModerationClient("http://localhost:1", "fake-key", "test", 0.7, Map.of(), httpUtil, rateLimiter, logger);
         final ModerationPipeline pipeline = new ModerationPipeline(localFilter, layer1, null, true, false, 0.7, 500, true, 1, 100, 500, "block", logger);
         final ModerationPipeline.PipelineResult result = pipeline.process("clean message", null).join();
         assertFalse(result.moderationResult().isFlagged());
@@ -109,7 +110,7 @@ class ModerationPipelineTest {
     void failClosedReturnsEscalateOnError() {
         final HttpUtil httpUtil = new HttpUtil();
         final RateLimiter rateLimiter = new RateLimiter(100);
-        final OpenAIModerationClient layer1 = new OpenAIModerationClient("http://localhost:1", "fake-key", "test", 0.7, httpUtil, rateLimiter, logger);
+        final OpenAIModerationClient layer1 = new OpenAIModerationClient("http://localhost:1", "fake-key", "test", 0.7, Map.of(), httpUtil, rateLimiter, logger);
         final ModerationPipeline pipeline = new ModerationPipeline(localFilter, layer1, null, true, false, 0.7, 500, false, 1, 100, 500, "block", logger);
         final ModerationPipeline.PipelineResult result = pipeline.process("clean message", null).join();
         assertEquals(ModerationResult.Verdict.ESCALATE, result.moderationResult().verdict());

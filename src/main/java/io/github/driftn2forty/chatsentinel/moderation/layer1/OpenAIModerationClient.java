@@ -21,17 +21,19 @@ public final class OpenAIModerationClient {
     private final String baseUrl;
     private final String apiKey;
     private final String model;
-    private final double threshold;
+    private final double defaultThreshold;
+    private final Map<String, Double> categoryThresholds;
     private final HttpUtil httpUtil;
     private final RateLimiter rateLimiter;
     private final DebugLogger logger;
     private final Gson gson = new Gson();
 
-    public OpenAIModerationClient(String baseUrl, String apiKey, String model, double threshold, HttpUtil httpUtil, RateLimiter rateLimiter, DebugLogger logger) {
+    public OpenAIModerationClient(String baseUrl, String apiKey, String model, double defaultThreshold, Map<String, Double> categoryThresholds, HttpUtil httpUtil, RateLimiter rateLimiter, DebugLogger logger) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.model = model;
-        this.threshold = threshold;
+        this.defaultThreshold = defaultThreshold;
+        this.categoryThresholds = categoryThresholds;
         this.httpUtil = httpUtil;
         this.rateLimiter = rateLimiter;
         this.logger = logger;
@@ -90,7 +92,8 @@ public final class OpenAIModerationClient {
         if (categoryScores != null) {
             for (final Map.Entry<String, JsonElement> entry : categoryScores.entrySet()) {
                 final double score = entry.getValue().getAsDouble();
-                if (score >= threshold) {
+                final double catThreshold = categoryThresholds.getOrDefault(entry.getKey(), defaultThreshold);
+                if (score >= catThreshold) {
                     categories.add(entry.getKey());
                 }
                 maxScore = Math.max(maxScore, score);

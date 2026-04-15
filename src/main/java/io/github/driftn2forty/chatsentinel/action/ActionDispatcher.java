@@ -40,7 +40,7 @@ public final class ActionDispatcher {
     public CompletableFuture<Void> dispatch(Player player, String message, String source, ModerationResult result, PlayerData data) {
         final UUID uuid = player.getUniqueId();
         final double scoreBefore = data.getScore();
-        final double scoreAfter = scoreCalculator.addPoints(data, result.verdict().name());
+        final double scoreAfter = scoreCalculator.addPoints(data, result.verdict().name(), result.categories());
         data.incrementOffenses();
         data.setLastOffense(Instant.now());
 
